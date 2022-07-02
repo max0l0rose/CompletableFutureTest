@@ -153,6 +153,22 @@ public class Main {
                 .thenCompose(q -> CompletableFuture.completedFuture(q+1))
                 ;
 
+
+        CompletableFuture.supplyAsync()
+                .runAsync()
+                .handle()
+                .thenApplyAsync()
+                .thenAcceptAsync()
+                .thenAcceptBoth()
+                .thenCombine()
+                .thenCompose()
+                .acceptEither()
+                .applyToEither()
+
+//                .obtrudeValue()
+//                .obtrudeException()
+        ;
+
         //cf3.handle()
 //        try {
 //            cf3.join();
