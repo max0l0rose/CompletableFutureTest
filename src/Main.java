@@ -84,10 +84,17 @@ public class Main {
 
     public static void main(String[] args)
     {
+//        int a = 100;
+//        int b = 100;
+//        System.out.println(a==b); // false
+//        a = 1000;
+//        b = 1000;
+//        System.out.println(a==b); // false
+
         //thenCombine_test();
         //thenApply_test();
 
-        int a = 1;
+//        int qq = 1;
 
 
 
@@ -112,9 +119,9 @@ public class Main {
             }
             System.out.println("supplyAsync " + Thread.currentThread().getName());
             return 1;
-        }, currentThreadExecutor//, executorService
+        }//, currentThreadExecutor//, executorService
         );
-        CompletableFuture cf3 = cf2.thenApplyAsync( //thenAcceptAsync( // no res
+        CompletableFuture<Integer> cf3 = cf2.thenApplyAsync( //thenAcceptAsync( // no res
                     v -> {
                         try {
                             Thread.sleep(2000);
@@ -122,67 +129,76 @@ public class Main {
                             e.printStackTrace();
                         }
                         System.out.println("thenApplyAsync " + v + ", " + Thread.currentThread().getName());
-                        //int q = 1/0;
+                        int q = 1/0;
                         return 2;
-                    }, currentThreadExecutor //, executorService
+                    }//, currentThreadExecutor //, executorService
             )
-            .exceptionally(ex -> {
-                System.out.println("exceptionally " + ex + ", " + Thread.currentThread().getName());
-                return 3;
-           })
+                .handle((v, t) -> { // called always!
+                    System.out.println("handle: " + v + ", " + t);
+                    return 3;
+                })
+
+//                .exceptionally(ex -> { // called only exceptionally
+//                    System.out.println("exceptionally " + ex + ", " + Thread.currentThread().getName());
+//                    return 3;
+//                })
+                ;
 //                .thenAcceptBoth(CompletableFuture.completedFuture(1) //.supplyAsync(() -> " World"),
 //                        , (s1, s2) -> {
 //                            int qq = 1;
 //                            //return null;
 //                        }
 //                )
-                .thenCombine(CompletableFuture.supplyAsync(()-> {
+            CompletableFuture<Integer> cf4 = cf3.thenCombine(
+                    CompletableFuture.supplyAsync(()-> {
                         try {
                             Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        System.out.println("thenCombine: supplyAsync: " + Thread.currentThread().getName());
                         return 10;
                     }
-                    , currentThreadExecutor
+                    //, currentThreadExecutor
                     ) //.supplyAsync(() -> " World"),
                     , (s1, s2) -> {
-                    return s1 + s2;
+                        return s1 + s2;
                     }
                 )
-                .thenCompose(q -> CompletableFuture.completedFuture(q+1))
+                .thenCompose(v -> { // is depended on exception handling
+                    System.out.println("thenCompose: " + v + " " + Thread.currentThread().getName());
+                    return CompletableFuture.completedFuture(v+1);
+                })
+                .whenComplete((v, t) -> {
+                    System.out.println("whenComplete: " + v + " " + t);
+                    int a = 1;
+                })
                 ;
 
 
-        CompletableFuture.supplyAsync()
-                .runAsync()
-                .handle()
-                .thenApplyAsync()
-                .thenAcceptAsync()
-                .thenAcceptBoth()
-                .thenCombine()
-                .thenCompose()
-                .acceptEither()
-                .applyToEither()
+        System.out.println("=== BEGIN === " + cf4.isDone() + " " + cf4.isCompletedExceptionally());
 
-//                .obtrudeValue()
-//                .obtrudeException()
-        ;
+        CompletableFuture.allOf(CompletableFuture.completedFuture(1), CompletableFuture.completedFuture(2)) // anyOf()
+                .whenComplete((v, t) -> {
+                    System.out.println("allOf: whenComplete: " + v + " " + t + " " + Thread.currentThread().getName());
+                    int a = 1;
+                });
 
         //cf3.handle()
-//        try {
-//            cf3.join();
-//        } catch (CompletionException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            cf3.join();
+        } catch (CompletionException e) {
+            e.printStackTrace();
+        }
 
-//        try {
-//            cf3.get();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
+        try {
+          Integer res = cf4.get();
+          int a = 1;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
 //        System.out.println("Joined ");
 
@@ -191,8 +207,9 @@ public class Main {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
-        System.out.println("End " + cf3.isDone() + " " + cf3.isCompletedExceptionally());
+        System.out.println("--- End --- " + cf4.isDone() + " " + cf4.isCompletedExceptionally());
 
+        int a = 1;
 
 //        CompletableFuture<String> future1
 //                = CompletableFuture.supplyAsync(() -> "Hello");
@@ -208,3 +225,22 @@ public class Main {
 
     }
 }
+
+
+//        CompletableFuture.supplyAsync()
+//                .runAsync()
+//                .runAfterBoth()
+//                .handle()
+//                .thenApplyAsync()
+//                .thenAcceptAsync()
+//                .thenAcceptBoth()
+//                .thenCombine()
+//                .thenCompose()
+//                .acceptEither()
+
+//                .applyToEither()
+
+
+//                .obtrudeValue()
+//                .obtrudeException()
+;
